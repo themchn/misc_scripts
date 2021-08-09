@@ -34,23 +34,29 @@ done
 
 cycle_clock() {
 # cycle between predefined clock speeds from defaults
-case "$cur_max_clock" in
-    "$idle_clock")
-        tee_to_cpu "$half_clock" "$clock_path"
-        ;;
-    "$half_clock")
-        tee_to_cpu "$base_clock" "$clock_path"
-        ;;
-    "$base_clock")
-        tee_to_cpu "$turbo_clock" "$clock_path"
-        ;;
-    "$turbo_clock")
-        tee_to_cpu "$idle_clock" "$clock_path"
-        ;;
-    *)
-        tee_to_cpu "$base_clock" "$clock_path"
-        ;;
-esac
+if [[ -n "$1" ]] ; then
+    clock_to_set="$1"
+    tee_to_cpu "$clock_to_set" "$clock_path"
+else
+    case "$cur_max_clock" in
+        "$idle_clock")
+            clock_to_set="$half_clock"
+            ;;
+        "$half_clock")
+            clock_to_set="$base_clock"
+            ;;
+        "$base_clock")
+            clock_to_set="$turbo_clock"
+            ;;
+        "$turbo_clock")
+            clock_to_set="$idle_clock"
+            ;;
+        *)
+            tee_to_cpu "$base_clock" "$clock_path"
+            ;;
+    esac
+    tee_to_cpu "$clock_to_set" "$clock_path"
+fi
 }
 
 cycle_governor() {
@@ -124,7 +130,7 @@ case "$1" in
         cycle_cores "$2"
         ;;
     clock)
-        cycle_clock
+        cycle_clock "$2"
         ;;
     governor)
         cycle_governor
